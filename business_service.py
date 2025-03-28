@@ -2,8 +2,10 @@ from fastapi import FastAPI
 import time
 from typing import Dict
 from openai import OpenAI
+import os
 
 business_app = FastAPI()
+openai_key = os.getenv("OPENAI_KEY")
 
 @business_app.get("/")
 def root():
@@ -18,7 +20,7 @@ def process_data(payload: Dict):
 
     client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
-    api_key="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",
+    api_key=openai_key,
     )
 
     completion = client.chat.completions.create(

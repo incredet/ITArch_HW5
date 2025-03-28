@@ -1,8 +1,9 @@
 from fastapi import FastAPI, Header, HTTPException
 import requests
+import os
 
 client_app = FastAPI()
-APP_TOKEN = "SuperSecretToken"
+APP_TOKEN = os.getenv("APP_TOKEN")
 db_url = "http://0.0.0.0:8001"
 b_url = "http://0.0.0.0:8000"
 
@@ -16,7 +17,7 @@ def health():
 
 @client_app.get("/execute")
 def execute(authorization: str = Header(None)):
-    print(authorization)
+    print(APP_TOKEN)
     if authorization != f"Bearer {APP_TOKEN}":
         raise HTTPException(status_code=401, detail="Unauthorized")
     key, value = "message", "The world is going to end"

@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  business_service:
+    build:
+      context: ./business_service
+      dockerfile: Dockerfile
+    image: localhost/business_service:latest
+    container_name: business_service
+    ports:
+      - "8000:8000"
+    networks:
+      - mynet
+
+  pinger:
+    build:
+      context: ./pinger
+      dockerfile: Dockerfile
+    image: localhost/pinger:latest
+    container_name: pinger
+    ports:
+      - "8001:8001"
+    depends_on:
+      - business_service
+    environment:
+      SERVICE_A_URL: "http://business_service:8000/health"
+    networks:
+      - mynet
+
+networks:
+  mynet:
+    driver: bridge

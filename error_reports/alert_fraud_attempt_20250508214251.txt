@@ -1,0 +1,3 @@
+Time: 2025-05-08T21:42:51.357692 UTC
+Type: fraud_attempt
+Description: High transaction amount: 15000

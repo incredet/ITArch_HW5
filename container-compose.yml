@@ -1,32 +1,37 @@
 version: '3.8'
-
 services:
-  business_service:
-    build:
-      context: ./business_service
-      dockerfile: Dockerfile
-    image: localhost/business_service:latest
-    container_name: business_service
+  redis:
+    image: redis:alpine
     ports:
-      - "8000:8000"
-    networks:
-      - mynet
+      - '6379:6379'
 
-  pinger:
-    build:
-      context: ./pinger
-      dockerfile: Dockerfile
-    image: localhost/pinger:latest
-    container_name: pinger
+  business_service:
+    build: ./business_service
+    command: uvicorn business_service:app --host 0.0.0.0 --port 8000
     ports:
-      - "8001:8001"
+      - '8000:8000'
     depends_on:
+      - redis
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+
+  celery_worker_1:
+    build: ./business_service        # use same Dockerfile as business_service
+    command: celery -A celery_app.celery_app worker --loglevel=info --concurrency=1
+    depends_on:
+      - redis
       - business_service
     environment:
-      SERVICE_A_URL: "http://business_service:8000/health"
-    networks:
-      - mynet
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
 
-networks:
-  mynet:
-    driver: bridge
+  celery_worker_2:
+    build: ./business_service        # use same Dockerfile as business_service
+    command: celery -A celery_app.celery_app worker --loglevel=info --concurrency=1
+    depends_on:
+      - redis
+      - business_service
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
